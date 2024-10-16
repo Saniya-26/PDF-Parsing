@@ -302,8 +302,8 @@ if uploaded_quote:
         st.write("### Quote PDF Preview")
         
         # Encode the PDF content as base64 for embedding
-        b64_pdf = base64.b64encode(PDFbyte).decode()
-        
+        b64_pdf = base64.b64encode(PDFbyte).decode()       
+      
         # PDF.js Viewer embedded in Streamlit using HTML and JavaScript
         pdf_js_viewer = f"""
         <!DOCTYPE html>
@@ -311,10 +311,22 @@ if uploaded_quote:
         <head>
           <title>PDF.js viewer</title>
           <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+          <style>
+            #pdf-container {{
+                width: 100%;
+                height: 100%;
+                overflow-y: scroll;  /* Vertical scrolling */
+            }}
+            canvas {{
+                display: block;  /* Stack canvases vertically */
+                margin: 10px auto;  /* Center canvases */
+                width: 90%;  /* Adjust width to fit container */
+            }}
+          </style>
         </head>
         <body>
           <div id="pdf-container"></div>  <!-- Container to hold multiple canvases -->
-          
+    
           <script>
             var url = 'data:application/pdf;base64,{b64_pdf}';
             var loadingTask = pdfjsLib.getDocument(url);
@@ -327,7 +339,6 @@ if uploaded_quote:
     
                   // Create a new canvas element for each page
                   var canvas = document.createElement('canvas');
-                  canvas.style.display = 'block';
                   document.getElementById('pdf-container').appendChild(canvas);
     
                   var context = canvas.getContext('2d');
