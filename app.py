@@ -313,40 +313,43 @@ if uploaded_quote:
           <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
         </head>
         <body>
-          <div>
-            <canvas id="the-canvas" style="width: 100%;"></canvas>
-          </div>
+          <div id="pdf-container"></div>  <!-- Container to hold multiple canvases -->
+          
           <script>
             var url = 'data:application/pdf;base64,{b64_pdf}';
             var loadingTask = pdfjsLib.getDocument(url);
             loadingTask.promise.then(function(pdf) {{
-              // Fetch the first page
-              pdf.getPage(1).then(function(page) {{
-                var scale = 1.5;
-                var viewport = page.getViewport({{ scale: scale }});
-        
-                // Prepare canvas using PDF page dimensions
-                var canvas = document.getElementById('the-canvas');
-                var context = canvas.getContext('2d');
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-        
-                // Render PDF page into canvas context
-                var renderContext = {{
-                  canvasContext: context,
-                  viewport: viewport
-                }};
-                page.render(renderContext);
-              }});
+              // Loop through all pages
+              for (var pageNum = 1; pageNum <= pdf.numPages; pageNum++) {{
+                pdf.getPage(pageNum).then(function(page) {{
+                  var scale = 1.5;
+                  var viewport = page.getViewport({{ scale: scale }});
+    
+                  // Create a new canvas element for each page
+                  var canvas = document.createElement('canvas');
+                  canvas.style.display = 'block';
+                  document.getElementById('pdf-container').appendChild(canvas);
+    
+                  var context = canvas.getContext('2d');
+                  canvas.height = viewport.height;
+                  canvas.width = viewport.width;
+    
+                  // Render PDF page into canvas context
+                  var renderContext = {{
+                    canvasContext: context,
+                    viewport: viewport
+                  }};
+                  page.render(renderContext);
+                }});
+              }}
             }});
           </script>
         </body>
         </html>
         """
-        
+    
         # Render the PDF in the browser using PDF.js
         st.components.v1.html(pdf_js_viewer, height=800, scrolling=True)
-
 
     # Right column: Display extracted JSON data
     with col2:
