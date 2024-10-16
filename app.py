@@ -312,10 +312,15 @@ if uploaded_quote:
           <title>PDF.js viewer</title>
           <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
           <style>
+            body {{
+                margin: 0;  /* Remove default margins */
+                padding: 0; /* Remove default padding */
+                overflow: hidden; /* Prevent body overflow */
+            }}
             #pdf-container {{
                 width: 100%;
-                height: 100%;
-                overflow-y: scroll;  /* Vertical scrolling */
+                height: 800px;  /* Fixed height for vertical scrolling */
+                overflow-y: scroll;  /* Allow vertical scrolling */
             }}
             canvas {{
                 display: block;  /* Stack canvases vertically */
@@ -360,7 +365,7 @@ if uploaded_quote:
         """
     
         # Render the PDF in the browser using PDF.js
-        st.components.v1.html(pdf_js_viewer, height=800, scrolling=True)
+        st.components.v1.html(pdf_js_viewer, height=800, scrolling=False)
 
     # Right column: Display extracted JSON data
     with col2:
