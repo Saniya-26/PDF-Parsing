@@ -303,7 +303,7 @@ if uploaded_quote:
         
        # Display the PDF using base64
         b64_pdf = base64.b64encode(PDFbyte).decode()  # Encode PDF as base64 string
-        pdf_display = f'<iframe src="data:application/pdf;base64,{b64_pdf}" sandbox="allow-scripts allow-same-origin" width="100%" height="800px" style="border: none;"></iframe>'
+        pdf_display = f'<iframe src="data:application/pdf;base64,{b64_pdf}" sandbox="allow-scripts" width="100%" height="800px" style="border: none;"></iframe>'
         st.markdown(pdf_display, unsafe_allow_html=True)
 
     # Right column: Display extracted JSON data
