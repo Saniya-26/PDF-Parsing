@@ -1,5 +1,4 @@
 import os
-import time
 import json
 import fitz  # PyMuPDF for PDF handling
 from dotenv import load_dotenv
@@ -9,15 +8,10 @@ import base64
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import PromptTemplate
-from langchain_core.pydantic_v1 import BaseModel, Field
+from langchain_core.pydantic_v1 import BaseModel
 
 # Set full screen mode for better visibility
 st.set_page_config(layout="wide")
-
-# Create a folder to store uploaded quotes
-folder_quote = "Uploaded_Quotes"
-if not os.path.exists(folder_quote):
-    os.makedirs(folder_quote)
 
 # File uploader for a single quote PDF
 uploaded_quote = st.file_uploader(
@@ -28,29 +22,18 @@ uploaded_quote = st.file_uploader(
 
 # Initialize variables
 quote_text = None
-quote_pdf_url = None
 
 if uploaded_quote:
-    # Get the file name and path
-    file_name = uploaded_quote.name
-    file_path = os.path.join(folder_quote, file_name)
-    
-    # Save the uploaded PDF file
-    with open(file_path, "wb") as f:
-        f.write(uploaded_quote.getbuffer())
-    
-    # Parse the uploaded PDF file to extract text
-    reader = fitz.open(file_path)
+    # Read the uploaded PDF file directly into memory
+    PDFbyte = uploaded_quote.read()  # Read PDF content
+    reader = fitz.open(stream=PDFbyte, filetype="pdf")  # Open PDF from BytesIO stream
     text = ''
     for page_num in range(len(reader)):
         page = reader[page_num]
         text += page.get_text() + '\n'
     
-    # Store extracted text and PDF path
     quote_text = text
-    quote_pdf_url = file_path  # Store the path to the uploaded PDF
     
-    st.write(f"File '{file_name}' parsed successfully.")
 
 # API Key
 api_key = os.getenv("GOOGLE_API_KEY")
@@ -92,7 +75,7 @@ class QuoteScreener(BaseModel):
     company_sign_at: str
     subscription_number: str
 
-# Prompt for screening quotes ---------------------------------------
+# Prompt for screening quotes
 Prompt_quote = """
 Task: Process the following quote and extract detailed information into structured fields. Please include all relevant details such as:
 
@@ -318,23 +301,17 @@ if uploaded_quote:
     with col1:
         st.write("### Quote PDF Preview")
         
-        # Render the PDF as a base64 string
-        with open(quote_pdf_url, "rb") as pdf_file:
-            PDFbyte = pdf_file.read()
-            b64_pdf = base64.b64encode(PDFbyte).decode()  # Encode PDF as base64 string
-            pdf_display = f"""
-            <iframe src="data:application/pdf;base64,{b64_pdf}" 
-                    width="100%" height="800px" style="border: none;"></iframe>
-            """
-        
-        st.markdown(pdf_display, unsafe_allow_html=True)  # Display the PDF in an iframe
+       # Display the PDF using base64
+        b64_pdf = base64.b64encode(PDFbyte).decode()  # Encode PDF as base64 string
+        pdf_display = f'<iframe src="data:application/pdf;base64,{b64_pdf}" width="100%" height="800px" style="border: none;"></iframe>'
+        st.markdown(pdf_display, unsafe_allow_html=True)
 
-   # Right column: Display extracted JSON data
+    # Right column: Display extracted JSON data
     with col2:
         st.write("### Extracted JSON Data")
         if quote_score_list:
-            # Get the first invoice's data
-            json_data = quote_score_list[0]  # Extract the first invoice
+            # Get the first quote's data
+            json_data = quote_score_list[0]  # Extract the first quote
             
             # Convert the JSON to a formatted string
             json_str = json.dumps(json_data, indent=4)  # Convert JSON to a formatted string
