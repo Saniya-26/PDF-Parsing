@@ -62,8 +62,7 @@ urllib3==2.2.3
 watchdog==5.0.3
 streamlit
 python-dotenv
-PyMuPDF==1.22.5  # To match your fitz import for PDF handling
-base64
-langchain-google-genai  # For using Google Generative AI with Langchain
-langchain-core  # For prompts, output parsers, and BaseModel
-pydantic==1.10.7  # Ensure compatibility with langchain's pydantic_v1
+PyMuPDF==1.22.5  
+langchain-google-genai 
+langchain-core  
+pydantic==1.10.7  
