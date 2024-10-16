@@ -301,10 +301,52 @@ if uploaded_quote:
     with col1:
         st.write("### Quote PDF Preview")
         
-       # Display the PDF using base64
-        b64_pdf = base64.b64encode(PDFbyte).decode()  # Encode PDF as base64 string
-        pdf_display = f'<iframe src="data:application/pdf;base64,{b64_pdf}" sandbox="allow-scripts" width="100%" height="800px" style="border: none;"></iframe>'
-        st.markdown(pdf_display, unsafe_allow_html=True)
+        # Encode the PDF content as base64 for embedding
+        b64_pdf = base64.b64encode(PDFbyte).decode()
+        
+        # PDF.js Viewer embedded in Streamlit using HTML and JavaScript
+        pdf_js_viewer = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>PDF.js viewer</title>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+        </head>
+        <body>
+          <div>
+            <canvas id="the-canvas" style="width: 100%;"></canvas>
+          </div>
+          <script>
+            var url = 'data:application/pdf;base64,{b64_pdf}';
+            var loadingTask = pdfjsLib.getDocument(url);
+            loadingTask.promise.then(function(pdf) {{
+              // Fetch the first page
+              pdf.getPage(1).then(function(page) {{
+                var scale = 1.5;
+                var viewport = page.getViewport({{ scale: scale }});
+        
+                // Prepare canvas using PDF page dimensions
+                var canvas = document.getElementById('the-canvas');
+                var context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+        
+                // Render PDF page into canvas context
+                var renderContext = {{
+                  canvasContext: context,
+                  viewport: viewport
+                }};
+                page.render(renderContext);
+              }});
+            }});
+          </script>
+        </body>
+        </html>
+        """
+        
+        # Render the PDF in the browser using PDF.js
+        st.components.v1.html(pdf_js_viewer, height=800, scrolling=True)
+
 
     # Right column: Display extracted JSON data
     with col2:
