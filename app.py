@@ -132,8 +132,9 @@ def process_quotes(quote_text, quote_screener_chain):
     
     return quote_score_list
 
+
 def generate_quote_html(quote_data):
-    html_content = """
+    liquid_content = """
     <html>
     <head>
         <style>
@@ -187,16 +188,16 @@ def generate_quote_html(quote_data):
         <div class="quote-section">
             <h3>General Information</h3>
             <table class="quote-details">
-                <tr><th>Quote ID</th><td>{id}</td></tr>
-                <tr><th>Customer Name</th><td>{customer_name}</td></tr>
-                <tr><th>Status</th><td>{status}</td></tr>
-                <tr><th>Billing Start Date</th><td>{billing_start_date}</td></tr>
-                <tr><th>Service Start Date</th><td>{service_start_date}</td></tr>
-                <tr><th>Quote Placed At</th><td>{quote_placed_at}</td></tr>
-                <tr><th>Quote Expiry At</th><td>{quote_expiry_at}</td></tr>
-                <tr><th>Total Charges</th><td>{total_charges}</td></tr>
-                <tr><th>Currency</th><td>{currency}</td></tr>
-                <tr><th>Notes</th><td>{notes}</td></tr>
+                <tr><th>Quote ID</th><td>{{ quote.id }}</td></tr>
+                <tr><th>Customer Name</th><td>{{ quote.customer_name }}</td></tr>
+                <tr><th>Status</th><td>{{ quote.status }}</td></tr>
+                <tr><th>Billing Start Date</th><td>{{ quote.billing_start_date }}</td></tr>
+                <tr><th>Service Start Date</th><td>{{ quote.service_start_date }}</td></tr>
+                <tr><th>Quote Placed At</th><td>{{ quote.quote_placed_at }}</td></tr>
+                <tr><th>Quote Expiry At</th><td>{{ quote.quote_expiry_at }}</td></tr>
+                <tr><th>Total Charges</th><td>{{ quote.total_charges }}</td></tr>
+                <tr><th>Currency</th><td>{{ quote.currency }}</td></tr>
+                <tr><th>Notes</th><td>{{ quote.notes }}</td></tr>
             </table>
         </div>
 
@@ -213,24 +214,17 @@ def generate_quote_html(quote_data):
                     <th>List Price</th>
                     <th>Quantity</th>
                 </tr>
-    """
-    
-    # Loop through plans
-    for plan in quote_data.get('plans', []):
-        html_content += f"""
-            <tr>
-                <td>{plan.get('product_id', 'N/A')}</td>
-                <td>{plan.get('product_name', 'N/A')}</td>
-                <td>{plan.get('plan_id', 'N/A')}</td>
-                <td>{plan.get('plan_name', 'N/A')}</td>
-                <td>{plan.get('pricing_model', 'N/A')}</td>
-                <td>{plan.get('list_price', '0.00')}</td>
-                <td>{plan.get('quantity', '0')}</td>
-            </tr>
-        """
-
-    # Add Metadata Section
-    html_content += """
+                {% for plan in quote.plans %}
+                <tr>
+                    <td>{{ plan.product_id }}</td>
+                    <td>{{ plan.product_name }}</td>
+                    <td>{{ plan.plan_id }}</td>
+                    <td>{{ plan.plan_name }}</td>
+                    <td>{{ plan.pricing_model }}</td>
+                    <td>{{ plan.list_price }}</td>
+                    <td>{{ plan.quantity }}</td>
+                </tr>
+                {% endfor %}
             </table>
         </div>
 
@@ -238,41 +232,22 @@ def generate_quote_html(quote_data):
         <div class="quote-section metadata-section">
             <h3>Metadata</h3>
             <table class="metadata">
-                <tr><th>Sender Name</th><td>{sender_name}</td></tr>
-                <tr><th>Sender Email</th><td>{sender_email}</td></tr>
-                <tr><th>Recipient Name</th><td>{recipient_name}</td></tr>
-                <tr><th>Recipient Email</th><td>{recipient_email}</td></tr>
-                <tr><th>Created By</th><td>{created_by_name}</td></tr>
-                <tr><th>Updated By</th><td>{updated_by}</td></tr>
-                <tr><th>Created At</th><td>{created_date}</td></tr>
-                <tr><th>Updated At</th><td>{updated_date}</td></tr>
+                <tr><th>Sender Name</th><td>{{ quote.sender_name }}</td></tr>
+                <tr><th>Sender Email</th><td>{{ quote.sender_email }}</td></tr>
+                <tr><th>Recipient Name</th><td>{{ quote.recipient_name }}</td></tr>
+                <tr><th>Recipient Email</th><td>{{ quote.recipient_email }}</td></tr>
+                <tr><th>Created By</th><td>{{ quote.created_by_name }}</td></tr>
+                <tr><th>Updated By</th><td>{{ quote.updated_by }}</td></tr>
+                <tr><th>Created At</th><td>{{ quote.created_date }}</td></tr>
+                <tr><th>Updated At</th><td>{{ quote.updated_date }}</td></tr>
             </table>
         </div>
 
     </body>
     </html>
     """
-    # Format the HTML with quote_data
-    return html_content.format(
-        id=quote_data.get('id', 'N/A'),
-        customer_name=quote_data.get('customer_name', 'N/A'),
-        status=quote_data.get('status', 'N/A'),
-        billing_start_date=quote_data.get('billing_start_date', 'N/A'),
-        service_start_date=quote_data.get('service_start_date', 'N/A'),
-        quote_placed_at=quote_data.get('quote_placed_at', 'N/A'),
-        quote_expiry_at=quote_data.get('quote_expiry_at', 'N/A'),
-        total_charges=quote_data.get('total_charges', 'N/A'),
-        currency=quote_data.get('currency', 'N/A'),
-        notes=quote_data.get('notes', 'N/A'),
-        sender_name=quote_data.get('sender_name', 'N/A'),
-        sender_email=quote_data.get('sender_email', 'N/A'),
-        recipient_name=quote_data.get('recipient_name', 'N/A'),
-        recipient_email=quote_data.get('recipient_email', 'N/A'),
-        created_by_name=quote_data.get('created_by_name', 'N/A'),
-        updated_by=quote_data.get('updated_by', 'N/A'),
-        created_date=quote_data.get('created_date', 'N/A'),
-        updated_date=quote_data.get('updated_date', 'N/A')
-    )
+    return liquid_content
+
 
 # Layout with two rows and two columns
 if uploaded_quote:
